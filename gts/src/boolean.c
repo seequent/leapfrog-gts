@@ -243,13 +243,24 @@ static gint triangle_point_orientation (GtsTriangle * t1,
 					gint o1,
 					GtsPoint * p)
 {
-  GtsPoint * p1 = GTS_POINT (GTS_SEGMENT (t1->e1)->v1);
-  GtsPoint * p2 = GTS_POINT (GTS_SEGMENT (t1->e1)->v2);
-  GtsPoint * p3 = GTS_POINT (gts_triangle_vertex (t1));
-  GtsPoint * p4 = GTS_POINT (GTS_SEGMENT (t2->e1)->v1);
-  GtsPoint * p5 = GTS_POINT (GTS_SEGMENT (t2->e1)->v2);
-  GtsPoint * p6 = GTS_POINT (gts_triangle_vertex (t2));
-  gint o = triangle_triangle_orientation (p1, p2, p3, p4, p5, p6);
+  GtsPoint * p1;
+  GtsPoint * p2;
+  GtsPoint * p3;
+  GtsPoint * p4;
+  GtsPoint * p5;
+  GtsPoint * p6;
+  gint o;
+
+  g_return_val_if_fail (t1 != NULL, 0);
+  g_return_val_if_fail (t2 != NULL, 0);
+
+  p1 = GTS_POINT (GTS_SEGMENT (t1->e1)->v1);
+  p2 = GTS_POINT (GTS_SEGMENT (t1->e1)->v2);
+  p3 = GTS_POINT (gts_triangle_vertex (t1));
+  p4 = GTS_POINT (GTS_SEGMENT (t2->e1)->v1);
+  p5 = GTS_POINT (GTS_SEGMENT (t2->e1)->v2);
+  p6 = GTS_POINT (gts_triangle_vertex (t2));
+  o = triangle_triangle_orientation (p1, p2, p3, p4, p5, p6);
 
   if (o != 0)
     return o;
