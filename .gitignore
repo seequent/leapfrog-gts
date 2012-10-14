@@ -1,0 +1,12 @@
+*.exe
+*.qpkg
+*.ncb
+*.suo
+*.obj
+*.pdb
+x64/Debug/*
+x64/Release/*
+Win32/Debug/*
+Win32/Release/*
+*.user
+gts/src/predicates_init.h
