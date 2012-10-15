@@ -1956,6 +1956,9 @@ static void self_intersecting (GtsBBox * bb1, GtsBBox * bb2,
   GtsTriangle * t1 = bb1->bounded;
   GtsTriangle * t2 = bb2->bounded;
 
+  g_return_if_fail(t1 != NULL);
+  g_return_if_fail(t2 != NULL);
+
   if (t1 != t2) {
     GtsSegment * s1 = GTS_SEGMENT (t1->e1);
     GtsSegment * s2 = GTS_SEGMENT (t1->e2);
