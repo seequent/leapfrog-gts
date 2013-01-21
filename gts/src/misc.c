@@ -44,7 +44,8 @@ static GtsFile * file_new (void)
 
   f = g_malloc (sizeof (GtsFile));
   f->fp = NULL;
-  f->s = f->s1 = NULL;
+  f->buf = NULL;
+  f->len = 0;
   f->curline = 1;
   f->curpos = 1;
   f->token = g_string_new ("");
@@ -56,7 +57,6 @@ static GtsFile * file_new (void)
   f->delimiters = g_strdup (" \t");
   f->comments = g_strdup (GTS_COMMENTS);
   f->tokens = g_strdup ("\n{}()=");
-
   return f;
 }
 
@@ -85,14 +85,29 @@ GtsFile * gts_file_new (FILE * fp)
  *
  * Returns: a new #GtsFile.
  */
-GtsFile * gts_file_new_from_string (const gchar * s)
+GtsFile * gts_file_new_from_string (gchar * s)
+{
+  g_return_val_if_fail (s != NULL, NULL);
+
+  return gts_file_new_from_buffer (s, strlen (s));
+}
+
+/**
+ * gts_file_new_from_buffer:
+ * @buf: a buffer.
+ * @len: the size of the buffer.
+ *
+ * Returns: a new #GtsFile.
+ */
+GtsFile * gts_file_new_from_buffer (gchar * buf, size_t len)
 {
   GtsFile * f;
 
-  g_return_val_if_fail (s != NULL, NULL);
+  g_return_val_if_fail (buf != NULL, NULL);
 
   f = file_new ();
-  f->s1 = f->s = g_strdup (s);
+  f->buf = buf;
+  f->len = len;
   gts_file_next_token (f);
 
   return f;
@@ -113,8 +128,6 @@ void gts_file_destroy (GtsFile * f)
   g_free (f->tokens);
   if (f->error)
     g_free (f->error);
-  if (f->s1)
-    g_free (f->s1);
   g_string_free (f->token, TRUE);
   g_free (f);
 }
@@ -171,9 +184,12 @@ static gint next_char (GtsFile * f)
 {
   if (f->fp)
     return fgetc (f->fp);
-  else if (*f->s == '\0')
-    return EOF;
-  return *(f->s++);
+  else {
+    if (f->len == 0)
+      return EOF;
+    f->len--;
+    return *(f->buf++);
+  }
 }
 
 /**
@@ -243,12 +259,22 @@ guint gts_file_read (GtsFile * f, gpointer ptr, guint size, guint nmemb)
 
   g_return_val_if_fail (f != NULL, 0);
   g_return_val_if_fail (ptr != NULL, 0);
-  g_return_val_if_fail (f->fp != NULL, 0);
+  g_return_val_if_fail (f->fp != NULL || f->buf != NULL, 0);
 
   if (f->type == GTS_ERROR)
     return 0;
 
-  n = fread (ptr, size, nmemb, f->fp);
+  if (f->fp)
+    n = fread (ptr, size, nmemb, f->fp);
+  else {
+    n = MIN (f->len/size, nmemb);
+    if (n > 0) {
+      memcpy (ptr, f->buf, n*size);
+      f->buf += n*size;
+      f->len -= n*size;
+    }
+  }
+
   for (i = 0, p = ptr; i < n*size; i++, p++) {
     f->curpos++;
     if (*p == '\n') {
@@ -520,6 +546,14 @@ GtsFileVariable * gts_file_assign_next (GtsFile * f, GtsFileVariable * vars)
 	    else if (var->data)
 	      *((gdouble *) var->data) = atof (f->token->str); 
 	    break;
+	  case GTS_OBJ:
+	    gts_file_next_token (f);
+	    if (var->data) {
+	      GtsObject ** object = var->data;
+	      g_return_val_if_fail (GTS_IS_OBJECT (*object), NULL);
+	      (* (*object)->klass->read) (object, f);
+	    }
+	    break;
 	  case GTS_STRING:
 	    gts_file_next_token (f);
 	    if (f->type != GTS_INT && 
@@ -528,8 +562,37 @@ GtsFileVariable * gts_file_assign_next (GtsFile * f, GtsFileVariable * vars)
 	      gts_file_error (f, "expecting a string");
 	      var->set = FALSE;
 	    }
-	    else if (var->data)
-	      *((gchar **) var->data) = g_strdup (f->token->str); 
+	    else {
+	      if (f->token->str[0] != '"') { /* simple string */
+		if (var->data)
+		  *((gchar **) var->data) = g_strdup (f->token->str); 
+	      }
+	      else { 
+		/* quoted string */
+		gint len = strlen (f->token->str);
+		if (f->token->str[len - 1] == '"') { 
+		  /* simple quoted string */
+		  f->token->str[len - 1] = '\0';
+		  if (var->data)
+		    *((gchar **) var->data) = g_strdup (&(f->token->str[1]));
+		  f->token->str[len - 1] = '"';
+		}
+		else { 
+		  /* multiple parts */
+		  int c;
+		  GString * s = g_string_new (&(f->token->str[1]));
+		  g_string_append_c (s, ' ');
+		  c = gts_file_getc (f);
+		  while (c != '"' && c != EOF) {
+		    g_string_append_c (s, c);
+		    c = gts_file_getc (f);
+		  }
+		  if (var->data)
+		    *((gchar **) var->data) = g_strdup (s->str);
+		  g_string_free (s, TRUE);
+		}
+	      }
+	    }
 	    break;
 	  default:
 	    g_assert_not_reached ();
@@ -544,7 +607,8 @@ GtsFileVariable * gts_file_assign_next (GtsFile * f, GtsFileVariable * vars)
     gts_file_error (f, "unknown identifier `%s'", f->token->str);
   else if (f->type != GTS_ERROR) {
     g_assert (var->set);
-    gts_file_next_token (f);
+    if (f->type != '}')
+      gts_file_next_token (f);
     return var;
   }
   return NULL;

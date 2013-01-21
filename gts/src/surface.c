@@ -1379,8 +1379,8 @@ gboolean gts_edge_collapse_creates_fold (GtsEdge * e,
   s = GTS_SEGMENT (e);
   v1 = s->v1;
   v2 = s->v2;
-  replace_vertex (v1->segments, v1, v);
-  replace_vertex (v2->segments, v2, v);
+  if (v1 != v) replace_vertex (v1->segments, v1, v);
+  if (v2 != v) replace_vertex (v2->segments, v2, v);
 
   i = v1->segments;
   while (i && !folded) {
@@ -1428,8 +1428,8 @@ gboolean gts_edge_collapse_creates_fold (GtsEdge * e,
     g_slist_free (triangles);
   }
 #endif
-  replace_vertex (v1->segments, v, v1);
-  replace_vertex (v2->segments, v, v2);
+  if (v1 != v) replace_vertex (v1->segments, v, v1);
+  if (v2 != v) replace_vertex (v2->segments, v, v2);
   return folded;
 }
 

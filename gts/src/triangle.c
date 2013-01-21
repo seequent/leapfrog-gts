@@ -812,33 +812,33 @@ gboolean gts_triangle_is_ok (GtsTriangle * t)
 void gts_triangle_vertices (GtsTriangle * t,
 			    GtsVertex ** v1, GtsVertex ** v2, GtsVertex ** v3)
 {
-  GtsSegment * e1, * e2;
+  GtsSegment * s1, * s2;
 
   g_return_if_fail (t != NULL);
   g_return_if_fail (v1 != NULL && v2 != NULL && v3 != NULL);
 
-  e1 = GTS_SEGMENT (t->e1);
-  e2 = GTS_SEGMENT (t->e2);
+  s1 = GTS_SEGMENT (t->e1);
+  s2 = GTS_SEGMENT (t->e2);
 
-  if (GTS_SEGMENT (e1)->v2 == GTS_SEGMENT (e2)->v1) {
-    *v1 = GTS_SEGMENT (e1)->v1; 
-    *v2 = GTS_SEGMENT (e1)->v2; 
-    *v3 = GTS_SEGMENT (e2)->v2;
+  if (s1->v2 == s2->v1) {
+    *v1 = s1->v1; 
+    *v2 = s1->v2; 
+    *v3 = s2->v2;
   }
-  else if (GTS_SEGMENT (e1)->v2 == GTS_SEGMENT (e2)->v2) {
-    *v1 = GTS_SEGMENT (e1)->v1; 
-    *v2 = GTS_SEGMENT (e1)->v2; 
-    *v3 = GTS_SEGMENT (e2)->v1;
+  else if (s1->v2 == s2->v2) {
+    *v1 = s1->v1; 
+    *v2 = s1->v2; 
+    *v3 = s2->v1;
   }
-  else if (GTS_SEGMENT (e1)->v1 == GTS_SEGMENT (e2)->v1) {
-    *v1 = GTS_SEGMENT (e1)->v2; 
-    *v2 = GTS_SEGMENT (e1)->v1; 
-    *v3 = GTS_SEGMENT (e2)->v2;
+  else if (s1->v1 == s2->v1) {
+    *v1 = s1->v2; 
+    *v2 = s1->v1; 
+    *v3 = s2->v2;
   }
   else {
-    *v1 = GTS_SEGMENT (e1)->v2; 
-    *v2 = GTS_SEGMENT (e1)->v1; 
-    *v3 = GTS_SEGMENT (e2)->v1;
+    *v1 = s1->v2; 
+    *v2 = s1->v1; 
+    *v3 = s2->v1;
   }
 }
 

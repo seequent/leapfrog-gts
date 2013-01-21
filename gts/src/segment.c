@@ -146,7 +146,7 @@ GtsIntersect gts_segments_are_intersecting (GtsSegment * s1, GtsSegment * s2)
   GtsPoint * p1, * p2, * p3, * p4;
   gdouble d1, d2, d3, d4;
 
-  g_return_val_if_fail (s1 != NULL && s2 != NULL, FALSE);
+  g_return_val_if_fail (s1 != NULL && s2 != NULL, GTS_OUT);
 
   p1 = GTS_POINT (s1->v1); p2 = GTS_POINT (s1->v2);
   p3 = GTS_POINT (s2->v1); p4 = GTS_POINT (s2->v2);

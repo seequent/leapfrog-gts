@@ -919,6 +919,11 @@ GtsSplit * gts_split_new (GtsSplitClass * klass,
 {
   GtsSplit * vs;
   GtsVertex * v1, * v2;
+#ifndef DYNAMIC_SPLIT
+  GtsEdge * e;
+  GSList * i;
+  GtsSplitCFace * cf;
+#endif
 
   g_return_val_if_fail (klass != NULL, NULL);
   g_return_val_if_fail (v != NULL, NULL);

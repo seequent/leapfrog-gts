@@ -21,8 +21,12 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <string.h>
-#include <pgm.h>
 #include "config.h"
+#ifdef NETPBM_INCLUDE
+#  include <netpbm/pgm.h>
+#else
+#  include <pgm.h>
+#endif
 #ifdef HAVE_GETOPT_H
 #  include <getopt.h>
 #endif /* HAVE_GETOPT_H */
@@ -500,7 +504,8 @@ int main (int argc, char * argv[])
       {"number", required_argument, NULL, 'n'},
       {"cost", required_argument, NULL, 'c'},
       {"help", no_argument, NULL, 'h'},
-      {"verbose", no_argument, NULL, 'v'}
+      {"verbose", no_argument, NULL, 'v'},
+      { NULL }
     };
     int option_index = 0;
     switch ((c = getopt_long (argc, argv, "hvn:c:lfr:kC",

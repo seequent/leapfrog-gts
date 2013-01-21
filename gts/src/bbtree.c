@@ -1040,7 +1040,7 @@ void gts_bb_tree_triangle_distance (GNode * tree,
   p = GTS_POINT (gts_object_new (GTS_OBJECT_CLASS (gts_point_class ())));
 
   l1 = sqrt (gts_vector_scalar (p1p2, p1p2));
-  n1 = (int)(l1/delta) + 1;
+  n1 = (guint)(l1/delta) + 1;
   dt1 = 1.0/(gdouble) n1;
   t1 = 0.0;
   for (i = 0; i <= n1; i++, t1 += dt1) {

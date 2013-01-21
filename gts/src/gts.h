@@ -132,12 +132,12 @@ typedef enum {
   GTS_DOUBLE = 1 << 12,
   GTS_STRING = 1 << 13,
   GTS_FILE   = 1 << 14,
-  GTS_ERROR  = 1 << 15
+  GTS_ERROR  = 1 << 15,
+  GTS_OBJ    = 1 << 16,
 } GtsTokenType;
 
 struct _GtsFile {
   FILE * fp;
-  gchar * s, * s1;
   guint line, pos;
   GString * token;
   GtsTokenType type;
@@ -149,6 +149,8 @@ struct _GtsFile {
   gchar * delimiters;
   gchar * comments;
   gchar * tokens;
+  gchar * buf;
+  size_t len;
 };
 
 typedef struct _GtsFileVariable GtsFileVariable;
@@ -164,7 +166,9 @@ struct _GtsFileVariable {
 
 
 GtsFile *      gts_file_new               (FILE * fp);
-GtsFile *      gts_file_new_from_string   (const gchar * s);
+GtsFile *      gts_file_new_from_string   (gchar * s);
+GtsFile *      gts_file_new_from_buffer   (gchar * buf,
+					   size_t len);
 void           gts_file_verror            (GtsFile * f,
 					   const gchar * format,
 					   va_list args);
@@ -260,15 +264,8 @@ gpointer         gts_object_check_cast     (gpointer object,
 					    gpointer klass);
 gpointer         gts_object_class_check_cast (gpointer klass, 
 					      gpointer from);
-G_INLINE_FUNC
-gpointer         gts_object_is_from_class  (gpointer object,
-					    gpointer klass);
-G_INLINE_FUNC
-gpointer         gts_object_class_is_from_class (gpointer klass,
-						 gpointer from);
 
-#ifdef	G_CAN_INLINE
-G_INLINE_FUNC
+static inline
 gpointer gts_object_is_from_class (gpointer object,
 				   gpointer klass)
 {
@@ -292,7 +289,7 @@ gpointer gts_object_is_from_class (gpointer object,
   return NULL;
 }
 
-G_INLINE_FUNC
+static inline
 gpointer gts_object_class_is_from_class (gpointer klass,
 					 gpointer from)
 {
@@ -310,7 +307,6 @@ gpointer gts_object_class_is_from_class (gpointer klass,
 
   return NULL;
 }
-#endif /* G_CAN_INLINE */
 
 GtsObjectClass * gts_object_class_from_name     (const gchar * name);
 
@@ -401,6 +397,11 @@ gdouble       gts_point_in_circle                    (GtsPoint * p,
 						      GtsPoint * p1,
 						      GtsPoint * p2,
 						      GtsPoint * p3);
+gdouble       gts_point_in_sphere                    (GtsPoint * p, 
+						      GtsPoint * p1,
+						      GtsPoint * p2,
+						      GtsPoint * p3,
+						      GtsPoint * p4);
 gdouble       gts_point_in_triangle_circle           (GtsPoint * p, 
 						      GtsTriangle * t);
 gdouble       gts_point_orientation                  (GtsPoint * p1,
