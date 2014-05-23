@@ -16,6 +16,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+ 
+#define RECURSION_LIMIT 10000
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -276,12 +278,17 @@ static void triangle_barycenter (GtsTriangle * t, GtsPoint * b)
 static GtsFace * point_locate (GtsPoint * o,
 			       GtsPoint * p,
 			       GtsFace * f,
-			       GtsSurface * surface)
+			       GtsSurface * surface,
+                   int recursion_count)
 {
   GtsEdge * prev;
   gboolean on_summit;
   GtsVertex * v1, * v2, * v3;
   GtsEdge * e2, * e3;    
+  
+  if (RECURSION_LIMIT < recursion_count) {
+    return NULL;
+  }
   
   prev = triangle_next_edge (GTS_TRIANGLE (f), o, p, &on_summit);
 
@@ -296,7 +303,7 @@ static GtsFace * point_locate (GtsPoint * o,
 	(f1 = neighbor (f, GTS_TRIANGLE (f)->e2, surface)) ||
 	(f1 = neighbor (f, GTS_TRIANGLE (f)->e3, surface))) {
       triangle_barycenter (GTS_TRIANGLE (f1), o);
-      return point_locate (o, p, f1, surface);
+      return point_locate (o, p, f1, surface, recursion_count + 1);
     }
     return NULL;
   }
@@ -332,7 +339,7 @@ static GtsFace * point_locate (GtsPoint * o,
       if ((f1 = neighbor (f, e2, surface)) ||
 	  (f1 = neighbor (f, e3, surface))) {
 	triangle_barycenter (GTS_TRIANGLE (f1), o);
-	return point_locate (o, p, f1, surface);
+	return point_locate (o, p, f1, surface, recursion_count + 1);
       }
       return NULL;
     }
@@ -395,7 +402,7 @@ GtsFace * gts_point_locate (GtsPoint * p,
 
   o = GTS_POINT (gts_object_new (GTS_OBJECT_CLASS (gts_point_class ())));
   triangle_barycenter (GTS_TRIANGLE (guess), o);
-  fr = point_locate (o, p, guess, surface);
+  fr = point_locate (o, p, guess, surface, 0);
   gts_object_destroy (GTS_OBJECT (o));
 
   return fr;
