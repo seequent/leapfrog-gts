@@ -92,6 +92,7 @@ struct _SFindClosest {
   GtsFace *closest;
   GtsPoint * p;
   gint stop;
+  gboolean found_one;
 };
 
 static gboolean find_closest (gpointer key, gpointer value, gpointer user_data)
@@ -107,10 +108,11 @@ static gboolean find_closest (gpointer key, gpointer value, gpointer user_data)
     if (d < data->dmin) {
       data->dmin = d;
       data->closest = f;
+	  data->found_one = TRUE;
     }
   }
   data->stop--;
-  return !(data->stop > 0);
+  return !(data->stop > 0) && data->found_one;
 }
 
 static GtsFace * closest_face (GtsSurface * s, GtsPoint * p)
@@ -121,6 +123,7 @@ static GtsFace * closest_face (GtsSurface * s, GtsPoint * p)
   fc.closest = NULL;
   fc.p = p;
   fc.stop = (gint) exp (log ((gdouble) g_hash_table_size (s->faces))/3.);
+  fc.found_one = FALSE;
   g_hash_table_find (s->faces, find_closest, &fc);
   
   return fc.closest;
