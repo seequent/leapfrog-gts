@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
  
-#define RECURSION_LIMIT 10000
+#define RECURSION_LIMIT 1000
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
