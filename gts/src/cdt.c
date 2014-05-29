@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
  
-#define RECURSION_LIMIT 1000
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -25,6 +24,7 @@
 
 
 #include <math.h>
+#include <glib.h>
 #include "gts.h"
 
 #ifdef USE_SURFACE_BTREE
@@ -282,16 +282,17 @@ static GtsFace * point_locate (GtsPoint * o,
 			       GtsPoint * p,
 			       GtsFace * f,
 			       GtsSurface * surface,
-                   int recursion_count)
+                   GHashTable * visited)
 {
   GtsEdge * prev;
   gboolean on_summit;
   GtsVertex * v1, * v2, * v3;
   GtsEdge * e2, * e3;    
   
-  if (RECURSION_LIMIT < recursion_count) {
+  if (g_hash_table_lookup(visited, f)) {
     return NULL;
   }
+  g_hash_table_insert (visited, f, f);
   
   prev = triangle_next_edge (GTS_TRIANGLE (f), o, p, &on_summit);
 
@@ -306,7 +307,7 @@ static GtsFace * point_locate (GtsPoint * o,
 	(f1 = neighbor (f, GTS_TRIANGLE (f)->e2, surface)) ||
 	(f1 = neighbor (f, GTS_TRIANGLE (f)->e3, surface))) {
       triangle_barycenter (GTS_TRIANGLE (f1), o);
-      return point_locate (o, p, f1, surface, recursion_count + 1);
+      return point_locate (o, p, f1, surface, visited);
     }
     return NULL;
   }
@@ -316,7 +317,12 @@ static GtsFace * point_locate (GtsPoint * o,
     gts_triangle_vertices_edges (GTS_TRIANGLE (f), prev, 
 				 &v1, &v2, &v3, &prev, &e2, &e3);
   while (f) {
-    gdouble orient = gts_point_orientation (o, GTS_POINT (v3), p);
+    gdouble orient;
+    if (g_hash_table_lookup(visited, f)) {
+      return NULL;
+    }
+	g_hash_table_insert (visited, f, f);
+    orient = gts_point_orientation (o, GTS_POINT (v3), p);
 
     if (orient < 0.0) {
       if (gts_point_orientation (GTS_POINT (v2), GTS_POINT (v3), p) >= 0.0)
@@ -342,7 +348,7 @@ static GtsFace * point_locate (GtsPoint * o,
       if ((f1 = neighbor (f, e2, surface)) ||
 	  (f1 = neighbor (f, e3, surface))) {
 	triangle_barycenter (GTS_TRIANGLE (f1), o);
-	return point_locate (o, p, f1, surface, recursion_count + 1);
+	return point_locate (o, p, f1, surface, visited);
       }
       return NULL;
     }
@@ -389,6 +395,7 @@ GtsFace * gts_point_locate (GtsPoint * p,
 {
   GtsFace * fr;
   GtsPoint * o;
+  GHashTable * visited;
 
   g_return_val_if_fail (p != NULL, NULL);
   g_return_val_if_fail (surface != NULL, NULL);
@@ -405,7 +412,9 @@ GtsFace * gts_point_locate (GtsPoint * p,
 
   o = GTS_POINT (gts_object_new (GTS_OBJECT_CLASS (gts_point_class ())));
   triangle_barycenter (GTS_TRIANGLE (guess), o);
-  fr = point_locate (o, p, guess, surface, 0);
+  visited = g_hash_table_new (NULL, NULL);
+  fr = point_locate (o, p, guess, surface, visited);
+  g_hash_table_destroy (visited);
   gts_object_destroy (GTS_OBJECT (o));
 
   return fr;
