@@ -66,6 +66,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="glib.lib"
+				ModuleDefinitionFile="$(InputDir)src\gts.def"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -137,6 +138,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="glib.lib"
+				ModuleDefinitionFile="$(InputDir)src\gts.def"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -204,6 +206,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="glib.lib"
+				ModuleDefinitionFile="$(InputDir)src\gts.def"
 			/>
 			<Tool
 				Name="VCALinkTool"
