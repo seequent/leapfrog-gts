@@ -23,7 +23,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
+				PreprocessorDefinitions="WIN32;_DEBUG;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -64,12 +64,14 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName)_d.lib"
-				AdditionalLibraryDirectories=""
+				Name="VCLinkerTool"
+				AdditionalDependencies="glib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -81,6 +83,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -88,7 +93,7 @@
 			Name="Debug|x64"
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -110,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
+				PreprocessorDefinitions="WIN32;_DEBUG;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -130,12 +135,14 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName)_d.lib"
-				AdditionalLibraryDirectories=""
+				Name="VCLinkerTool"
+				AdditionalDependencies="glib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -147,6 +154,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -154,7 +164,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -174,7 +184,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
+				PreprocessorDefinitions="WIN32;NDEBUG;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
@@ -192,11 +202,14 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalLibraryDirectories=""
+				Name="VCLinkerTool"
+				AdditionalDependencies="glib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -208,6 +221,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -215,7 +231,7 @@
 			Name="Release|x64"
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -236,7 +252,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories=".\src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
+				PreprocessorDefinitions="WIN32;NDEBUG;HAVE_CONFIG_H;_CRT_SECURE_NO_WARNINGS;GTS_COMPILATION"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				ProgramDataBaseFileName="$(OutDir)\$(TargetName).pdb"
@@ -254,11 +270,15 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalLibraryDirectories=""
+				Name="VCLinkerTool"
+				AdditionalDependencies="glib.lib"
+				ModuleDefinitionFile="$(InputDir)src\gts.def"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -268,6 +288,9 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
