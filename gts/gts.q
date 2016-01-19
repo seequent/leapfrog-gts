@@ -5,6 +5,7 @@ define64:
   
 into lib:
   from $(build_dir)\Release:
+    gts.dll
     gts.lib
     gts.pdb
 
