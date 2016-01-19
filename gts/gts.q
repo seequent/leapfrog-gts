@@ -3,9 +3,12 @@ define32:
 define64:
   build_dir=x64
   
-into lib:
+into bin:
   from $(build_dir)\Release:
     gts.dll
+
+into lib:
+  from $(build_dir)\Release:
     gts.lib
     gts.pdb
 
