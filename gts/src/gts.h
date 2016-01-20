@@ -38,17 +38,18 @@ extern "C" {
  * we prefix variable declarations so they can
  * properly get exported in windows dlls.
  */
-//#ifdef NATIVE_WIN32
-//#  ifdef GTS_COMPILATION
-//#    define GTS_C_VAR __declspec(dllexport)
-//#  else /* not GTS_COMPILATION */
-//#    define GTS_C_VAR extern __declspec(dllimport)
-//#  endif /* not GTS_COMPILATION */
-//#else /* not NATIVE_WIN32 */
-//#  define GTS_C_VAR extern
-//#endif /* not NATIVE_WIN32 */
-
-#define GTS_C_VAR extern
+#ifdef NATIVE_WIN32
+#  ifdef GTS_COMPILATION
+#pragma message ("export")
+#    define GTS_C_VAR __declspec(dllexport)
+#  else /* not GTS_COMPILATION */
+#pragma message ("import")
+#    define GTS_C_VAR extern __declspec(dllimport)
+#  endif /* not GTS_COMPILATION */
+#else /* not NATIVE_WIN32 */
+#pragma message ("extern")
+#  define GTS_C_VAR extern
+#endif /* not NATIVE_WIN32 */
 
 GTS_C_VAR const guint gts_major_version;
 GTS_C_VAR const guint gts_minor_version;

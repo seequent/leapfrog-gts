@@ -276,6 +276,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="glib.lib"
 				ModuleDefinitionFile="$(InputDir)src\gts.def"
+				GenerateDebugInformation="true"
 			/>
 			<Tool
 				Name="VCALinkTool"

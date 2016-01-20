@@ -32,7 +32,6 @@ EXPORTS
     gts_point_triangle_distance
     gts_point_triangle_distance2
     gts_segment_triangle_intersection
-    gts_allow_floating_vertices
     gts_color_vertex_class
     gts_vertex_class
     gts_vertex_faces
@@ -55,7 +54,6 @@ EXPORTS
     gts_segment_new
     gts_segments_are_intersecting
     gts_segments_from_vertices
-    gts_allow_floating_edges
     gts_edge_belongs_to_tetrahedron
     gts_edge_class
     gts_edge_face_number
@@ -97,7 +95,6 @@ EXPORTS
     gts_triangles_are_folded
     gts_triangles_common_edge
     gts_triangles_from_edges
-    gts_allow_floating_faces
     gts_face_class
     gts_face_foreach_neighbor
     gts_face_has_parent_surface
@@ -343,7 +340,6 @@ EXPORTS
     gts_hash_container_class
     gts_slist_containee_class
     gts_slist_container_class
-    gts_allow_floating_gnodes
     gts_fnode_class
     gts_fnode_new
     gts_gedge_class
