@@ -282,14 +282,19 @@ static GtsFace * point_locate (GtsPoint * o,
 			       GtsPoint * p,
 			       GtsFace * f,
 			       GtsSurface * surface,
-                   GHashTable * visited)
+			       GHashTable * visited,
+			       int * result_valid)
 {
   GtsEdge * prev;
   gboolean on_summit;
   GtsVertex * v1, * v2, * v3;
-  GtsEdge * e2, * e3;    
-  
+  GtsEdge * e2, * e3;
+  GtsFace * result;
+
+  *result_valid = 1;
+
   if (g_hash_table_lookup(visited, f)) {
+    *result_valid = 0;
     return NULL;
   }
   g_hash_table_insert (visited, f, f);
@@ -303,11 +308,26 @@ static GtsFace * point_locate (GtsPoint * o,
       return f; /* p is inside f */
 
     /* s intersects f exactly on a summit: restarts from a neighbor of f */
-    if ((f1 = neighbor (f, GTS_TRIANGLE (f)->e1, surface)) ||
-	(f1 = neighbor (f, GTS_TRIANGLE (f)->e2, surface)) ||
-	(f1 = neighbor (f, GTS_TRIANGLE (f)->e3, surface))) {
+    if ((f1 = neighbor (f, GTS_TRIANGLE (f)->e1, surface))) {
       triangle_barycenter (GTS_TRIANGLE (f1), o);
-      return point_locate (o, p, f1, surface, visited);
+      result = point_locate (o, p, f1, surface, visited, result_valid);
+      if (*result_valid) {
+        return result;
+      }
+    }
+    if ((f1 = neighbor (f, GTS_TRIANGLE (f)->e2, surface))) {
+      triangle_barycenter (GTS_TRIANGLE (f1), o);
+      result = point_locate (o, p, f1, surface, visited, result_valid);
+      if (*result_valid) {
+        return result;
+      }
+    }
+    if ((f1 = neighbor (f, GTS_TRIANGLE (f)->e3, surface))) {
+      triangle_barycenter (GTS_TRIANGLE (f1), o);
+      result = point_locate (o, p, f1, surface, visited, result_valid);
+      if (*result_valid) {
+        return result;
+      }
     }
     return NULL;
   }
@@ -319,6 +339,7 @@ static GtsFace * point_locate (GtsPoint * o,
   while (f) {
     gdouble orient;
     if (g_hash_table_lookup(visited, f)) {
+      *result_valid = 0;
       return NULL;
     }
 	g_hash_table_insert (visited, f, f);
@@ -345,10 +366,19 @@ static GtsFace * point_locate (GtsPoint * o,
 	return f; /* p is inside f */
 
       /* s intersects f exactly on v3: restarts from a neighbor of f */
-      if ((f1 = neighbor (f, e2, surface)) ||
-	  (f1 = neighbor (f, e3, surface))) {
-	triangle_barycenter (GTS_TRIANGLE (f1), o);
-	return point_locate (o, p, f1, surface, visited);
+      if ((f1 = neighbor (f, e2, surface))) {
+        triangle_barycenter (GTS_TRIANGLE (f1), o);
+        result = point_locate (o, p, f1, surface, visited, result_valid);
+        if (*result_valid) {
+          return result;
+        }
+      }
+      if ((f1 = neighbor (f, e3, surface))) {
+        triangle_barycenter (GTS_TRIANGLE (f1), o);
+        result = point_locate (o, p, f1, surface, visited, result_valid);
+        if (*result_valid) {
+          return result;
+        }
       }
       return NULL;
     }
@@ -396,6 +426,7 @@ GtsFace * gts_point_locate (GtsPoint * p,
   GtsFace * fr;
   GtsPoint * o;
   GHashTable * visited;
+  int result_valid;
 
   g_return_val_if_fail (p != NULL, NULL);
   g_return_val_if_fail (surface != NULL, NULL);
@@ -413,7 +444,7 @@ GtsFace * gts_point_locate (GtsPoint * p,
   o = GTS_POINT (gts_object_new (GTS_OBJECT_CLASS (gts_point_class ())));
   triangle_barycenter (GTS_TRIANGLE (guess), o);
   visited = g_hash_table_new (NULL, NULL);
-  fr = point_locate (o, p, guess, surface, visited);
+  fr = point_locate (o, p, guess, surface, visited, &result_valid);
   g_hash_table_destroy (visited);
   gts_object_destroy (GTS_OBJECT (o));
 
