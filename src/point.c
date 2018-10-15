@@ -784,7 +784,7 @@ static gint sortp (gpointer * p, guint n)
 
   for (i = 0; i < n - 1; i++)
     for (j = 0; j < n - 1 - i; j++)
-      if (GPOINTER_TO_UINT (p[j+1]) < GPOINTER_TO_UINT (p[j])) {
+      if ((uintptr_t)(p[j+1]) < (uintptr_t)(p[j])) {
 	gpointer tmp = p[j];
 
 	p[j] = p[j+1];
