@@ -122,9 +122,9 @@ static GtsFace * closest_face (GtsSurface * s, GtsPoint * p)
   fc.dmin = G_MAXDOUBLE;
   fc.closest = NULL;
   fc.p = p;
-  fc.stop = (gint) exp (log ((gdouble) g_hash_table_size (s->faces))/3.);
+  fc.stop = (gint) exp (log ((gdouble) g_hash_table_size (s->faces.objects))/3.);
   fc.found_one = FALSE;
-  g_hash_table_find (s->faces, find_closest, &fc);
+  g_hash_table_find (s->faces.objects, find_closest, &fc);
   
   return fc.closest;
 }
@@ -161,7 +161,7 @@ static GtsFace * closest_face (GtsSurface * s, GtsPoint * p)
   gdouble dmin = G_MAXDOUBLE;
   GtsFace * closest = NULL;
   GHashNode * node;
-  GHashTable * hash_table = s->faces;
+  GHashTable * hash_table = s->faces.objects;
 
   nt = g_hash_table_size (hash_table);
   if (!nt)
