@@ -40,7 +40,8 @@ static void surface_destroy (GtsObject * object)
 #ifdef USE_SURFACE_BTREE
   g_tree_destroy (surface->faces);
 #else /* not USE_SURFACE_BTREE */
-  g_hash_table_destroy (surface->faces);
+  g_hash_table_destroy (surface->faces.objects);
+  g_hash_table_destroy (surface->faces.object_keys);
 #endif /* not USE_SURFACE_BTREE */
 
   (* GTS_OBJECT_CLASS (gts_surface_class ())->parent_class->destroy) (object);
@@ -81,7 +82,9 @@ static void surface_init (GtsSurface * surface)
 #ifdef USE_SURFACE_BTREE
   surface->faces = g_tree_new (compare_pointers);
 #else /* not USE_SURFACE_BTREE */
-  surface->faces = g_hash_table_new (NULL, NULL);
+  surface->faces.objects = g_hash_table_new (NULL, NULL);
+  surface->faces.object_keys = g_hash_table_new(NULL, NULL);
+  surface->faces.last_key = 0;
 #endif /* not USE_SURFACE_BTREE */
   surface->vertex_class = gts_vertex_class ();
   surface->edge_class = gts_edge_class ();
@@ -158,9 +161,10 @@ void gts_surface_add_face (GtsSurface * s, GtsFace * f)
     g_tree_insert (s->faces, f, f);
   }
 #else /* not USE_SURFACE_BTREE */
-  if (!g_hash_table_lookup (s->faces, f)) {
+  if (!g_hash_table_lookup (s->faces.object_keys, f)) {
     f->surfaces = g_slist_prepend (f->surfaces, s);
-    g_hash_table_insert (s->faces, f, f);
+    g_hash_table_insert (s->faces.object_keys, f, (gpointer) ++s->faces.last_key);
+    g_hash_table_insert (s->faces.objects, (gpointer) s->faces.last_key, f);
   }
 #endif /* not USE_SURFACE_BTREE */
 
@@ -178,6 +182,7 @@ void gts_surface_add_face (GtsSurface * s, GtsFace * f)
 void gts_surface_remove_face (GtsSurface * s, 
 			      GtsFace * f)
 {
+  gpointer key;
   g_return_if_fail (s != NULL);
   g_return_if_fail (f != NULL);
 
@@ -186,7 +191,9 @@ void gts_surface_remove_face (GtsSurface * s,
 #ifdef USE_SURFACE_BTREE
   g_tree_remove (s->faces, f);
 #else /* not USE_SURFACE_BTREE */
-  g_hash_table_remove (s->faces, f);
+  key = g_hash_table_lookup(s->faces.object_keys, f);
+  g_hash_table_remove (s->faces.object_keys, f);
+  g_hash_table_remove (s->faces.objects, key);
 #endif /* not USE_SURFACE_BTREE */
 
   f->surfaces = g_slist_remove (f->surfaces, s);
@@ -930,8 +937,8 @@ static gint vertex_foreach_face (GtsTriangle * t,
 				 gpointer t_data,
 				 gpointer * info)
 #else /* not USE_SURFACE_BTREE */
-static void vertex_foreach_face (GtsTriangle * t,
-				 gpointer t_data,
+static void vertex_foreach_face (gpointer key,
+				 GtsTriangle * t,
 				 gpointer * info)
 #endif /* not USE_SURFACE_BTREE */
 {
@@ -983,7 +990,7 @@ void gts_surface_foreach_vertex (GtsSurface * s, GtsFunc func, gpointer data)
   g_tree_traverse (s->faces, (GTraverseFunc) vertex_foreach_face, G_IN_ORDER,
 		   info);
 #else /* not USE_SURFACE_BTREE */
-  g_hash_table_foreach (s->faces, (GHFunc) vertex_foreach_face, info);
+  g_hash_table_foreach (s->faces.objects, (GHFunc) vertex_foreach_face, info);
 #endif /* not USE_SURFACE_BTREE */
   g_hash_table_destroy (info[0]);
   /* allow removal of faces */
@@ -995,8 +1002,8 @@ static gint edge_foreach_face (GtsTriangle * t,
 			       gpointer t_data, 
 			       gpointer * info)
 #else /* not USE_SURFACE_BTREE */
-static void edge_foreach_face (GtsTriangle * t,
-			       gpointer t_data, 
+static void edge_foreach_face (gpointer key,
+			       GtsTriangle * t,
 			       gpointer * info)
 #endif /* not USE_SURFACE_BTREE */
 {
@@ -1045,7 +1052,7 @@ void gts_surface_foreach_edge (GtsSurface * s, GtsFunc func, gpointer data)
   g_tree_traverse (s->faces, (GTraverseFunc) edge_foreach_face, G_IN_ORDER,
 		   info);
 #else /* not USE_SURFACE_BTREE */
-  g_hash_table_foreach (s->faces, (GHFunc) edge_foreach_face, info);
+  g_hash_table_foreach (s->faces.objects, (GHFunc) edge_foreach_face, info);
 #endif /* not USE_SURFACE_BTREE */
   g_hash_table_destroy (info[0]);
   /* allow removal of faces */
@@ -1057,8 +1064,8 @@ static gint foreach_face (GtsFace * f,
 			  gpointer t_data,
 			  gpointer * info)
 #else /* not USE_SURFACE_BTREE */
-static void foreach_face (GtsFace * f, 
-			  gpointer t_data,
+static void foreach_face (gpointer key,
+			  GtsFace * f,
 			  gpointer * info)
 #endif /* not USE_SURFACE_BTREE */
 {
@@ -1093,7 +1100,7 @@ void gts_surface_foreach_face (GtsSurface * s,
   g_tree_traverse (s->faces, (GTraverseFunc) foreach_face, G_IN_ORDER,
 		   info);
 #else /* not USE_SURFACE_BTREE */
-  g_hash_table_foreach (s->faces, (GHFunc) foreach_face, info);
+  g_hash_table_foreach (s->faces.objects, (GHFunc) foreach_face, info);
 #endif /* not USE_SURFACE_BTREE */
   /* allow removal of faces */
   s->keep_faces = FALSE;
@@ -1123,8 +1130,8 @@ static gint foreach_face_remove (GtsFace * f,
   return FALSE;
 }
 #else /* not USE_SURFACE_BTREE */
-static gboolean foreach_face_remove (GtsFace * f,
-				     gpointer t_data,
+static gboolean foreach_face_remove (gpointer key,
+				     GtsFace * f,
 				     gpointer * info)
 {
   if ((*((GtsFunc) info[0])) (f, info[1])) {
@@ -1138,6 +1145,8 @@ static gboolean foreach_face_remove (GtsFace * f,
     
     if (GTS_SURFACE_CLASS (GTS_OBJECT (s)->klass)->remove_face)
       (* GTS_SURFACE_CLASS (GTS_OBJECT (s)->klass)->remove_face) (s, f);
+
+    g_hash_table_remove(s->faces.object_keys, f);
 
     return TRUE;
   }
@@ -1178,7 +1187,7 @@ guint gts_surface_foreach_face_remove (GtsSurface * s,
   g_tree_traverse (s->faces, (GTraverseFunc) foreach_face_remove, G_PRE_ORDER,
 		   info);
 #else /* not USE_SURFACE_BTREE */
-  n = g_hash_table_foreach_remove (s->faces, 
+  n = g_hash_table_foreach_remove (s->faces.objects,
 				   (GHRFunc) foreach_face_remove, 
 				   info);
 #endif /* not USE_SURFACE_BTREE */
@@ -2420,7 +2429,7 @@ guint gts_surface_face_number (GtsSurface * s)
 #ifdef USE_SURFACE_BTREE
   return g_tree_nnodes (s->faces);
 #else /* not USE_SURFACE_BTREE */
-  return g_hash_table_size (s->faces);
+  return g_hash_table_size (s->faces.objects);
 #endif /* not USE_SURFACE_BTREE */
 }
 

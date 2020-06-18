@@ -71,6 +71,7 @@ GTS_C_VAR const guint gts_binary_age;
 typedef struct _GtsObjectClassInfo     GtsObjectClassInfo;
 typedef struct _GtsObject        GtsObject;
 typedef struct _GtsObjectClass   GtsObjectClass;
+typedef struct _GtsObjectHashTable     GtsObjectHashTable;
 typedef struct _GtsPoint         GtsPoint;
 typedef struct _GtsPointClass    GtsPointClass;
 typedef struct _GtsVertex        GtsVertex;
@@ -257,6 +258,19 @@ struct _GtsObjectClass {
   GtsColor    (* color)      (GtsObject *);
   void        (* attributes) (GtsObject *, GtsObject *);
 };
+
+/* Dual hash table used when we can't hash directly on the object memory address because
+   deterministic object iteration order is required.
+   - first hash table holds objects indexed by key
+   - second hash table holds key indexed by object memory address
+   - the last key must be kept track of and incremented whenever a new key is needed
+ */
+struct _GtsObjectHashTable {
+	GHashTable * objects;
+	GHashTable * object_keys;
+	uintptr_t last_key;
+};
+
 
 gpointer         gts_object_class_new      (GtsObjectClass * parent_class,
 					    GtsObjectClassInfo * info);
@@ -1071,7 +1085,7 @@ struct _GtsSurface {
 #ifdef USE_SURFACE_BTREE
   GTree * faces;
 #else /* not USE_SURFACE_BTREE */
-  GHashTable * faces;
+  GtsObjectHashTable faces;
 #endif /* not USE_SURFACE_BTREE */
   GtsFaceClass * face_class;
   GtsEdgeClass * edge_class;
